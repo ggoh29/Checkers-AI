@@ -1,8 +1,8 @@
-from Agent import RandomAgent
-
+from RandomAgent import RandomAgent
+import time
 class Board:
 
-    def __init__(self, player1, player2):
+    def __init__(self, player1, player2, test = False, board = None):
         self.normal1 = [9, 7]
         self.normal2 = [-7, -9]
         self.queen = [9, -7, 7, -9]
@@ -15,13 +15,16 @@ class Board:
                           [49], [51], [53], [55],
                           [56], [58], [60], [62]]
 
-        playermove_dct = {0 : self.player1_normalMove,
-                          1 : self.player2_normalMove}
+        playermove_dct = {0 : self.player0_normalMove,
+                          1 : self.player1_normalMove}
 
         player_dct = {0 : player1,
                       1 : player2}
 
-        while True:
+        # test and board are used for situational testing purposes
+        self.board = board
+
+        while not test:
             self.board = [0, 5, 0, 5, 0, 5, 0, 5,
                           5, 0, 5, 0, 5, 0, 5, 0,
                           0, 5, 0, 5, 0, 5, 0, 5,
@@ -35,15 +38,20 @@ class Board:
             while True:
                 moves = playermove_dct[player]()
                 if len(moves) == 0:
+                    s = "Player {} has won the game!".format(1 - player)
+                    break
+                if self.board.count(3) == 0 and self.board.count(5) == 0:
+                    s = "Tie!"
                     break
                 else:
                     move = player_dct[player].play(moves)
                     self.play_move(move, player)
                     player = 1 - player
+
                 self.printboard()
                 print("\n")
 
-            new_in = input("Player {} has won the game! Input 'y' to play again.".format(player))
+            new_in = input("{} Input 'y' to play again.".format(s))
             if new_in != 'y':
                 break
 
@@ -51,23 +59,23 @@ class Board:
 
 
 
+    def player0_normalMove(self):
+        return self.__get_valid_moves(self.valid_pos, self.normal1, 5, False, False)
+
+
+
     def player1_normalMove(self):
-        return self.__get_valid_moves(self.valid_pos, self.normal1, 5, True)
+        return self.__get_valid_moves(self.valid_pos, self.normal2, 3, False, False)
 
 
-
-    def player2_normalMove(self):
-        return self.__get_valid_moves(self.valid_pos, self.normal2, 3, True)
-
-
-    def __get_valid_moves(self, squares, steps, player_num, bool):
+    def __get_valid_moves(self, squares, steps, player_num, movbool, capbool):
         capture = []
         moves = []
         queens = []
         l = len(steps)//2
         for coords in squares:
             i = coords[-1]
-            if self.board[i] == player_num or not bool:
+            if self.board[i] == player_num or capbool or movbool:
                 if i % 8 == 0:
                     pos_moves = steps[:l]
                 elif i % 8 == 7:
@@ -79,17 +87,16 @@ class Board:
                         j = i + move
                     else:
                         continue
-
-                    if self.board[j] == 1:
+                    if self.board[j] == 1 and not capbool:
                         move1 = coords[:]
                         move1.append(j)
                         moves.append(move1)
-                    if self.board[j] & 7 == player_num ^ 6:
+                    if self.board[j] & 7 == (player_num & 7) ^ 6:
                         if j % 8 == 0 or j % 8 == 7 or not -1 < j + move < 64:
                             continue
                         if self.board[j + move] == 1:
                             if j + move in coords:
-                                break
+                                continue
 
                             move1 = coords[:]
                             move1.append(j + move)
@@ -99,15 +106,15 @@ class Board:
                             move2.append(j + move)
                             moves.append(move2)
 
-            elif self.board[i] & 7 == player_num and bool:
+            elif self.board[i] == player_num|8 and len(steps) == 2:
                 queens.append([i])
 
         if len(capture) != 0:
-            further_captures = self.__get_valid_moves(capture, steps, player_num, False)
+            further_captures = self.__get_valid_moves(capture, steps, player_num, False, True)
             moves.extend(further_captures)
 
         if len(queens) != 0:
-            queen_moves = self.__get_valid_moves(queens, self.queen, player_num, False)
+            queen_moves = self.__get_valid_moves(queens, self.queen, player_num, True, False)
             moves.extend(queen_moves)
 
         return moves
@@ -145,7 +152,7 @@ class Board:
                  3 : 'o',
                  13: 'X',
                  11: '0',
-                 0 : '_',
+                 0 : '~',
                  1 : ' ' }
         thing = [i for i in range(0,65,8)]
         for j in range(8):

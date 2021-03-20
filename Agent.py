@@ -1,6 +1,7 @@
-import random
+from ZobristHash import ZobristHash
 
-class RandomAgent:
+class Agent:
 
-    def play(self, moves):
-        return random.choice(moves)
+    def __init__(self):
+        self.zb = ZobristHash()
+        self.hash = self.zb.start_pos
