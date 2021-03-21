@@ -3,8 +3,8 @@ import time
 class Board:
 
     def __init__(self, player1, player2, test = False, board = None):
-        self.normal1 = [9, 7]
-        self.normal2 = [-7, -9]
+        self.normal0 = [9, 7]
+        self.normal1 = [-7, -9]
         self.queen = [9, -7, 7, -9]
         self.valid_pos = [[1], [3], [5], [7],
                           [8], [10], [12], [14],
@@ -15,11 +15,11 @@ class Board:
                           [49], [51], [53], [55],
                           [56], [58], [60], [62]]
 
-        playermove_dct = {0 : self.player0_normalMove,
-                          1 : self.player1_normalMove}
+        playermove_dct = {0: self.player0_normalMove,
+                          1: self.player1_normalMove}
 
-        player_dct = {0 : player1,
-                      1 : player2}
+        player_dct = {0: player1,
+                      1: player2}
 
         # test and board are used for situational testing purposes
         self.board = board
@@ -60,12 +60,12 @@ class Board:
 
 
     def player0_normalMove(self):
-        return self.__get_valid_moves(self.valid_pos, self.normal1, 5, False, False)
+        return self.__get_valid_moves(self.valid_pos, self.normal0, 5, False, False)
 
 
 
     def player1_normalMove(self):
-        return self.__get_valid_moves(self.valid_pos, self.normal2, 3, False, False)
+        return self.__get_valid_moves(self.valid_pos, self.normal1, 3, False, False)
 
 
     def __get_valid_moves(self, squares, steps, player_num, movbool, capbool):

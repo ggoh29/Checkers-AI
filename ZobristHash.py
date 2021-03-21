@@ -2,7 +2,11 @@ import random
 
 class ZobristHash:
 
-    def __init__(self):
+    def __init__(self, player_no):
+        self.mask = 4294967295 # (1 << 32) - 1
+        self.bit = 4294967296 # 1 << 32
+        self.no = player_no
+
         self.index = [0, 0, 0, 1, 0, 2, 0, 3,
                       4, 0, 5, 0, 6, 0, 7, 0,
                       0, 8, 0, 9, 0,10, 0,11,
@@ -50,27 +54,57 @@ class ZobristHash:
 
 
     def update_hash(self, hash, move, board, player):
-        return hash
+        hash &= self.mask
+        first = move[0]
+        end_token = board[first]
+        update = self.dct[end_token][self.index[first]]
+        for i in range(len(move)-1):
+            start, end = move[i], move[i+1]
+            if abs(start - end) > 10:
+                mid = (start + end)//2
+                piece_at_location = board[mid]
+                if piece_at_location != 0 and piece_at_location != 1:
+                    index = self.index[mid]
+                    update ^= self.dct[piece_at_location][index]
+        update ^= self.dct[end_token][self.index[move[-1]]]
+        return hash ^ update | (1 - player) * self.bit
 
-import random
+
+    def calculate_hash(self, board, player):
+        start = 0
+        for i in range(64):
+            key = board[i]
+            if key == 0 or key == 1:
+                continue
+            else:
+                index = z.index[i]
+                start ^= z.dct[key][index]
+        return start | player * self.bit
+
 
 if __name__ == "__main__":
-    start = 0
-    z = ZobristHash()
-    board = [0, 5, 0, 5, 0, 5, 0, 5,
-             5, 0, 5, 0, 5, 0, 5, 0,
-             0, 5, 0, 5, 0, 5, 0, 5,
-             1, 0, 1, 0, 1, 0, 1, 0,
-             0, 1, 0, 1, 0, 1, 0, 1,
-             3, 0, 3, 0, 3, 0, 3, 0,
-             0, 3, 0, 3, 0, 3, 0, 3,
-             3, 0, 3, 0, 3, 0, 3, 0]
-    for i in range(64):
-        key = board[i]
-        if key == 0 or key == 1:
-            continue
-        else:
-            index = z.index[i]
-            start ^= z.dct[key][index]
+    z = ZobristHash(1)
+    board1 = [0, 5, 0, 5, 0, 5, 0, 5,
+              5, 0, 1, 0, 5, 0, 5, 0,
+              0, 5, 0, 5, 0, 5, 0, 5,
+              1, 0, 1, 0, 1, 0, 1, 0,
+              0, 1, 0, 5, 0, 1, 0, 1,
+              3, 0, 3, 0, 3, 0, 3, 0,
+              0, 3, 0, 3, 0, 3, 0, 3,
+              3, 0, 3, 0, 3, 0, 3, 0]
 
-    print(start)
+    board2 = [0, 5, 0, 5, 0, 5, 0, 5,
+              5, 0, 1, 0, 5, 0, 5, 0,
+              0, 5, 0, 5, 0, 5, 0, 5,
+              1, 0, 1, 0, 1, 0, 1, 0,
+              0, 3, 0, 5, 0, 1, 0, 1,
+              3, 0, 1, 0, 3, 0, 3, 0,
+              0, 3, 0, 3, 0, 3, 0, 3,
+              3, 0, 3, 0, 3, 0, 3, 0]
+    move = [42, 33]
+    hash = z.calculate_hash(board1,0)
+    print(hash)
+    hash1 = z.update_hash(hash, move, board1,0)
+    print(hash1)
+    hash2 = z.calculate_hash(board2,1)
+    print(hash2)
