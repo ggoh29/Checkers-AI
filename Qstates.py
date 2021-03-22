@@ -55,12 +55,3 @@ class Qstates:
                 mx = side_dct[side](mx, dct[dct_mx_key])
         return self.discountRate * mx
 
-
-
-
-
-
-
-if __name__ == "__main__":
-    q = Qstates()
-    q.save_to_file()
