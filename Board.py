@@ -1,8 +1,9 @@
-from RandomAgent import RandomAgent
-import time
+from Agent import Agent
+from Qstates import Qstates
+from ZobristHash import ZobristHash
 class Board:
 
-    def __init__(self, player1, player2, test = False, board = None):
+    def __init__(self, player1, player2, test = False, train = -1, board = None):
         self.normal0 = [9, 7]
         self.normal1 = [-7, -9]
         self.queen = [9, -7, 7, -9]
@@ -38,22 +39,34 @@ class Board:
             while True:
                 moves = playermove_dct[player]()
                 if len(moves) == 0:
-                    s = "Player {} has won the game!".format(1 - player)
+                    outcome = 1 - player
+                    # 0, 1 into -1, 1. 1, 0 into 1, -1
+                    s = "Player {} has won the game!".format(outcome)
+                    player1.update_outcome(self.board, player * -1 + outcome)
+                    # player2.update_outcome(self.board, player * -1 + outcome)
                     break
                 if self.board.count(3) == 0 and self.board.count(5) == 0:
                     s = "Tie!"
+                    player1.update_outcome(self.board, 0)
+                    # player2.update_outcome(self.board, 0)
                     break
                 else:
-                    move = player_dct[player].play(moves)
+                    move = player_dct[player].play(moves, self.board)
                     self.play_move(move, player)
                     player = 1 - player
+                # self.printboard()
+                # print("\n")
 
-                self.printboard()
-                print("\n")
+            if train == -1:
+                new_in = input("{} Input 'y' to play again.".format(s))
+                if new_in != 'y':
+                    break
 
-            new_in = input("{} Input 'y' to play again.".format(s))
-            if new_in != 'y':
-                break
+            elif train == 0:
+                return
+
+            else:
+                train -= 1
 
 
 
@@ -165,6 +178,10 @@ class Board:
 
 
 if __name__ == "__main__":
-    a = RandomAgent()
-    b = RandomAgent()
-    b = Board(a, b)
+    train_size = 50000
+    q = Qstates()
+    a = Agent(0, q, train_size)
+    b = Agent(1, q, train_size)
+    b = Board(a, b, train = train_size)
+    q.save_to_file()
+

@@ -40,7 +40,7 @@ class ZobristHash:
                        1867522302, 80113745, 15903794, 889705473,
                        732228207, 2103946038, 1270252991, 666689510,
                        858028631, 21992595, 602963952, 1041194461],
-                   15:[153300022, 426714932, 1881964380, 1991628397,
+                   13:[153300022, 426714932, 1881964380, 1991628397,
                        120790260, 300146210, 1121100866, 1642834015,
                        1635515374, 1728810882, 891722056, 1740397268,
                        1698350687, 1364100368, 1141828182, 863871908,
@@ -66,7 +66,15 @@ class ZobristHash:
                 if piece_at_location != 0 and piece_at_location != 1:
                     index = self.index[mid]
                     update ^= self.dct[piece_at_location][index]
-        update ^= self.dct[end_token][self.index[move[-1]]]
+
+        last_pos = self.index[move[-1]]
+        if end_token == 3 and last_pos in [1,3,5,7]:
+            update ^= self.dct[11][last_pos]
+        elif end_token == 5 and last_pos in [56,58,60,62]:
+            update ^= self.dct[13][last_pos]
+        else:
+            update ^= self.dct[end_token][last_pos]
+
         return hash ^ update | (1 - player) * self.bit
 
 
@@ -77,34 +85,42 @@ class ZobristHash:
             if key == 0 or key == 1:
                 continue
             else:
-                index = z.index[i]
-                start ^= z.dct[key][index]
+                index = self.index[i]
+                start ^= self.dct[key][index]
         return start | player * self.bit
 
 
 if __name__ == "__main__":
     z = ZobristHash(1)
-    board1 = [0, 5, 0, 5, 0, 5, 0, 5,
-              5, 0, 1, 0, 5, 0, 5, 0,
-              0, 5, 0, 5, 0, 5, 0, 5,
-              1, 0, 1, 0, 1, 0, 1, 0,
-              0, 1, 0, 5, 0, 1, 0, 1,
-              3, 0, 3, 0, 3, 0, 3, 0,
-              0, 3, 0, 3, 0, 3, 0, 3,
-              3, 0, 3, 0, 3, 0, 3, 0]
+    # board1 = [0, 5, 0, 5, 0, 5, 0, 5,
+    #           5, 0, 1, 0, 5, 0, 5, 0,
+    #           0, 5, 0, 5, 0, 5, 0, 5,
+    #           1, 0, 1, 0, 1, 0, 1, 0,
+    #           0, 1, 0, 5, 0, 1, 0, 1,
+    #           3, 0, 3, 0, 3, 0, 3, 0,
+    #           0, 3, 0, 3, 0, 3, 0, 3,
+    #           3, 0, 3, 0, 3, 0, 3, 0]
+    #
+    # board2 = [0, 5, 0, 5, 0, 5, 0, 5,
+    #           5, 0, 1, 0, 5, 0, 5, 0,
+    #           0, 5, 0, 5, 0, 5, 0, 5,
+    #           1, 0, 1, 0, 1, 0, 1, 0,
+    #           0, 3, 0, 5, 0, 1, 0, 1,
+    #           3, 0, 1, 0, 3, 0, 3, 0,
+    #           0, 3, 0, 3, 0, 3, 0, 3,
+    #           3, 0, 3, 0, 3, 0, 3, 0]
+    # move = [42, 33]
+    # hash = z.calculate_hash(board1,0)
+    # hash1 = z.update_hash(hash, move, board1,0)
+    # hash2 = z.calculate_hash(board2,1)
 
-    board2 = [0, 5, 0, 5, 0, 5, 0, 5,
-              5, 0, 1, 0, 5, 0, 5, 0,
-              0, 5, 0, 5, 0, 5, 0, 5,
-              1, 0, 1, 0, 1, 0, 1, 0,
-              0, 3, 0, 5, 0, 1, 0, 1,
-              3, 0, 1, 0, 3, 0, 3, 0,
+    zb = ZobristHash()
+    board3 = [0, 5, 0, 5, 0, 5, 0, 5,
+              5, 0, 1, 0, 5, 0, 1, 0,
+              0, 5, 0, 1, 0, 5, 0, 5,
+              3, 0, 1, 0, 5, 0, 3, 0,
+              0, 1, 0, 5, 0, 1, 0, 3,
+              3, 0, 3, 0, 1, 0, 1, 0,
               0, 3, 0, 3, 0, 3, 0, 3,
-              3, 0, 3, 0, 3, 0, 3, 0]
-    move = [42, 33]
-    hash = z.calculate_hash(board1,0)
-    print(hash)
-    hash1 = z.update_hash(hash, move, board1,0)
-    print(hash1)
-    hash2 = z.calculate_hash(board2,1)
-    print(hash2)
+              3, 0, 1, 0, 3, 0, 3, 0]
+
