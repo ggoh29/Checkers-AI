@@ -44,21 +44,18 @@ class Agent:
     def choose_optimal_move(self, moves : list, board : list) -> list:
         cur_hash = self.zb.calculate_hash(board, 1 - self.player_no)
         next_hash_list = [self.zb.update_hash(cur_hash, move, board, self.player_no) for move in moves]
-        try:
-            if cur_hash in self.Qstates.dct:
-                dct = self.Qstates.dct[cur_hash]
-                if len(dct) != 0:
-                    dct_mx_key = max(dct, key=lambda x: dct[x])
+        bool = True
+        if cur_hash in self.Qstates.dct:
+            dct = self.Qstates.dct[cur_hash]
+            if len(dct) != 0:
+                dct_mx_key = max(dct, key=lambda x: dct[x])
+                if dct_mx_key in moves:
                     move = moves[next_hash_list.index(dct_mx_key)]
-                else:
-                    move = random.choice(moves)
-            else:
-                move = random.choice(moves)
-        except ValueError:
-            print(board)
-            print(next_hash_list)
-            print(self.Qstates.dct[cur_hash])
-            x = 1/0
+                    bool = False
+
+        if bool:
+            move = random.choice(moves)
+
         return move
 
     def test(self, moves : list, board : list) -> list:

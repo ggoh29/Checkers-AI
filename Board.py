@@ -178,7 +178,7 @@ class Board:
 
 
 if __name__ == "__main__":
-    train_size = 1000
+    train_size = 10000
     q = Qstates()
     a = Agent(0, q, train_size, train=True)
     b = Agent(1, q, train_size, train = True)
