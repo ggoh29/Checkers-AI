@@ -21,6 +21,10 @@ class Board:
 
         player_dct = {0: player1,
                       1: player2}
+        if train != -1:
+            size_limit = True
+        else:
+            size_limit = False
 
         # test and board are used for situational testing purposes
         self.board = board
@@ -36,6 +40,8 @@ class Board:
                           3, 0, 3, 0, 3, 0, 3, 0]
 
             player = 0
+            if size_limit:
+                counter = 51
             while True:
                 moves = playermove_dct[player]()
                 if len(moves) == 0:
@@ -54,6 +60,12 @@ class Board:
                     move = player_dct[player].play(moves, self.board)
                     self.play_move(move, player)
                     player = 1 - player
+
+                if size_limit:
+                    counter -= 1
+                    if counter == 0 :
+                        player1.update_outcome(self.board, -1)
+                        break
                 # self.printboard()
                 # print("\n")
 
@@ -178,7 +190,7 @@ class Board:
 
 
 if __name__ == "__main__":
-    train_size = 100000
+    train_size = 5000
     q = Qstates()
     a = Agent(0, q, train_size, train=True)
     b = Agent(1, q, train_size, train = True)

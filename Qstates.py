@@ -1,5 +1,4 @@
 
-
 import json
 class Qstates:
 
@@ -19,8 +18,8 @@ class Qstates:
         f.close()
 
     def update_dct(self, sequence, result):
-        # 1 for win, 0 for tie
-        result_dct = {1 : 10, 0 : -2}
+        # 1 for win, 0 for tie, -1 for taking too long
+        result_dct = {1 : 10, 0 : -2, -1 : 0}
 
         state_before_winning = sequence[-2]
         winning_state = sequence[-1]

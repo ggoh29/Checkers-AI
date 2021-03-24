@@ -1,6 +1,7 @@
 from ZobristHash import ZobristHash
 from Qstates import Qstates
 import random
+import math
 
 class Agent:
 
@@ -48,7 +49,7 @@ class Agent:
         if cur_hash in self.Qstates.dct:
             dct = self.Qstates.dct[cur_hash]
             if len(dct) != 0:
-                dct_mx_key = max(dct, key=lambda x: dct[x])
+                dct_mx_key = max(dct, key=lambda x: dct[x] if x in next_hash_list else -math.inf)
                 if dct_mx_key in moves:
                     move = moves[next_hash_list.index(dct_mx_key)]
                     bool = False
