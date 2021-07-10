@@ -1,13 +1,13 @@
 from ZobristHash import ZobristHash
 from Qstates import Qstates
 import random
-import math
+from Agents.Agent import Agent
 
-class Agent:
+class RLAgent(Agent):
 
     def __init__(self, player_no : int, Qstates : Qstates, train_size : int, train : bool):
+        super(RLAgent, self).__init__(player_no)
         self.Qstates = Qstates
-        self.player_no = player_no
         self.zb = ZobristHash(player_no)
         self.hash = self.zb.start_pos
         self.cur = 0
@@ -49,7 +49,7 @@ class Agent:
         if cur_hash in self.Qstates.dct:
             dct = self.Qstates.dct[cur_hash]
             if len(dct) != 0:
-                dct_mx_key = max(dct, key=lambda x: dct[x] if x in next_hash_list else -math.inf)
+                dct_mx_key = max(dct, key=lambda x: dct[x])
                 if dct_mx_key in moves:
                     move = moves[next_hash_list.index(dct_mx_key)]
                     bool = False

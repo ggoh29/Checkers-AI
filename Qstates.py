@@ -1,25 +1,22 @@
 
-import json
+from Qscores import score
+import math
 class Qstates:
 
     def __init__(self):
         self.discountRate = 0.95
         self.alpha = 0.95
-        f = open("Qscores.txt")
-        d = json.load(f)
-        self.dct = {int(k1): {int(k2): v1 for k2, v1 in v.items()} for k1, v in d.items()}
-        f.close()
+        self.dct = score
 
 
     def save_to_file(self):
-        f = open("Qscores.txt", 'w')
-        j = json.dumps(self.dct)
-        f.write(j)
+        f = open("Qscores.py", 'w')
+        f.write(f'score = {self.dct}')
         f.close()
 
     def update_dct(self, sequence, result):
-        # 1 for win, 0 for tie, -1 for taking too long
-        result_dct = {1 : 10, 0 : -2, -1 : 0}
+        # 1 for win, 0 for tie
+        result_dct = {1 : 100, 0 : 0}
 
         state_before_winning = sequence[-2]
         winning_state = sequence[-1]
