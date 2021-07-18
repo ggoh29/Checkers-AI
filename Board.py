@@ -1,5 +1,4 @@
-from Agents import HumanAgent, RandomAgent, RLAgent, MinMaxAgent
-from Qstates import Qstates
+from Agents import MinMaxAgent
 
 
 class Board:
@@ -17,12 +16,12 @@ class Board:
                           [49], [51], [53], [55],
                           [56], [58], [60], [62]]
 
-        playermove_dct = {0: self.player0_normalMove,
+        self.playermove_dct = {0: self.player0_normalMove,
                           1: self.player1_normalMove}
 
-        player_dct = {0: player1,
+        self.player_dct = {0: player1,
                       1: player2}
-
+        self.sequence = []
         # test and board are used for situational testing purposes
         if test:
             self.board = board
@@ -35,28 +34,6 @@ class Board:
                           3, 0, 3, 0, 3, 0, 3, 0,
                           0, 3, 0, 3, 0, 3, 0, 3,
                           3, 0, 3, 0, 3, 0, 3, 0]
-
-        player = 0
-        while True:
-            moves = playermove_dct[player]()
-            if len(moves) == 0:
-                outcome = 1 - player
-                # 0, 1 into -1, 1. 1, 0 into 1, -1
-                s = "Player {} has won the game!".format(outcome)
-                # player1.update_outcome(self.board, player * -1 + outcome)
-                # player2.update_outcome(self.board, player * -1 + outcome)
-                break
-            if self.board.count(3) == 0 and self.board.count(5) == 0:
-                s = "Tie!"
-                # player1.update_outcome(self.board, 0)
-                # player2.update_outcome(self.board, 0)
-                break
-            else:
-                move = player_dct[player].play(moves, self.board)
-                Board.play_move(self.board, move, player)
-                player = 1 - player
-            self.printboard()
-            print("\n")
 
 
     def player0_normalMove(self):
@@ -78,6 +55,30 @@ class Board:
             partition = [swaps[i] for i in self.board[start:end]]
             print(partition)
 
+    def play(self):
+        player = 0
+        self.sequence = [self.board]
+        moves = self.playermove_dct[player]()
+        if len(moves) == 0:
+            outcome = 1 - player
+            # 0, 1 into -1, 1. 1, 0 into 1, -1
+            print("Player {} has won the game!".format(outcome))
+            return player * -1 + outcome
+        if self.board.count(3) == 0 and self.board.count(5) == 0:
+            print("Tie!")
+            return 0
+        else:
+            move = self.player_dct[player].play(moves, self.board)
+            Board.play_move(self.board, move, player)
+            self.sequence.append(self.board)
+            player = 1 - player
+        # self.printboard()
+        # print("\n")
+
+
+    @staticmethod
+    def convert(board):
+        return [i for i in board if i != 0]
 
     @staticmethod
     def get_valid_moves(board, squares, steps, player_num, movbool, capbool):

@@ -1,41 +1,37 @@
-from ZobristHash import ZobristHash
-from Qstates import Qstates
+from NeuralNetwork.Qstates import Qstates, RegressionNeuralNetwork
+from Board import Board
 import random
 from Agents.Agent import Agent
 
 class RLAgent(Agent):
 
-    def __init__(self, player_no : int, Qstates : Qstates, train_size : int, train : bool):
+    def __init__(self, player_no, RNN : RegressionNeuralNetwork, size = 1000, istrain = True):
         super(RLAgent, self).__init__(player_no)
-        self.Qstates = Qstates
-        self.zb = ZobristHash(player_no)
-        self.hash = self.zb.start_pos
-        self.cur = 0
-        self.train_size = train_size
-        player_dct = {0 : [], 1 : [self.zb.start_pos]}
-
-        self.istrain = train
-
-        self.moves = player_dct[player_no]
+        self.RNN = RNN
+        self.Qstates = Qstates(self.RNN)
+        self.istrain = istrain
+        self.size = size
+        self.games_played = 0
 
 
     def play(self, moves : list, board : list) -> list:
         if self.istrain:
             return self.train(moves, board)
         else:
-            return self.test(moves, board)
+            return self.actual(moves, board)
+
 
     def train(self, moves : list, board : list) -> list:
-        cur_hash = self.zb.calculate_hash(board, self.player_no)
-        self.moves.append(cur_hash)
-        prob = self.cur/self.train_size
-        if random.random() < prob:
-            move = self.choose_random_move(moves)
+        prob = self.games_played/self.size
+        boolean = random.random() < prob
+        if boolean:
+            return random.choice(moves)
         else:
-            move = self.choose_optimal_move(moves, board)
-        next_hash = self.zb.update_hash(cur_hash, move, board, self.player_no)
-        self.moves.append(next_hash)
-        return move
+            return self.choose_optimal_move(moves, board)
+
+
+    def actual(self, moves : list, board : list) -> list:
+        return self.choose_optimal_move(moves, board)
 
 
     def choose_random_move(self, moves : list) -> list:
@@ -43,30 +39,11 @@ class RLAgent(Agent):
 
 
     def choose_optimal_move(self, moves : list, board : list) -> list:
-        cur_hash = self.zb.calculate_hash(board, 1 - self.player_no)
-        next_hash_list = [self.zb.update_hash(cur_hash, move, board, self.player_no) for move in moves]
-        bool = True
-        if cur_hash in self.Qstates.dct:
-            dct = self.Qstates.dct[cur_hash]
-            if len(dct) != 0:
-                dct_mx_key = max(dct, key=lambda x: dct[x])
-                if dct_mx_key in moves:
-                    move = moves[next_hash_list.index(dct_mx_key)]
-                    bool = False
+        return self.Qstates.choose_optimal_move(moves, board, self.player_no)
 
-        if bool:
-            move = random.choice(moves)
 
-        return move
-
-    def test(self, moves : list, board : list) -> list:
-        return self.choose_optimal_move(moves, board)
-
-    def update_outcome(self, final_board, result):
+    def update_outcome(self, final_sequence, result):
         if self.istrain:
-            self.cur += 1
-            hash = self.zb.calculate_hash(final_board, self.player_no)
-            if self.moves[-1] != hash:
-                self.moves.append((hash))
-            self.Qstates.update_dct(self.moves, abs(result))
+            self.games_played = (1 + self.games_played) % self.size
+            self.Qstates.update_NN(final_sequence, result)
 
