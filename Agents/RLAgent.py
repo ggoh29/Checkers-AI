@@ -1,14 +1,13 @@
-from NeuralNetwork.Qstates import Qstates, RegressionNeuralNetwork
-from Board import Board
+from NeuralNetwork import Qstates, RegressionNeuralNetwork as RNN
 import random
 from Agents.Agent import Agent
 
 class RLAgent(Agent):
 
-    def __init__(self, player_no, RNN : RegressionNeuralNetwork, size = 1000, istrain = True):
+    def __init__(self, player_no, RNN : RNN.RegressionNeuralNetwork, size = 1000, istrain = True):
         super(RLAgent, self).__init__(player_no)
         self.RNN = RNN
-        self.Qstates = Qstates(self.RNN)
+        self.Qstates = Qstates.Qstates(self.RNN)
         self.istrain = istrain
         self.size = size
         self.games_played = 0
@@ -23,7 +22,7 @@ class RLAgent(Agent):
 
     def train(self, moves : list, board : list) -> list:
         prob = self.games_played/self.size
-        boolean = random.random() < prob
+        boolean = random.random() > prob
         if boolean:
             return random.choice(moves)
         else:
@@ -46,4 +45,7 @@ class RLAgent(Agent):
         if self.istrain:
             self.games_played = (1 + self.games_played) % self.size
             self.Qstates.update_NN(final_sequence, result)
+
+    def save_to_file(self):
+        self.RNN.saveToFile()
 

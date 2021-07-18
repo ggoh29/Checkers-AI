@@ -1,5 +1,6 @@
 import math
 from random import random
+from Board import Board
 
 class RegressionNeuralNetwork:
 
@@ -23,7 +24,7 @@ class RegressionNeuralNetwork:
             self.createWeight()
             self.saveToFile()
         else:
-            from weight import weights
+            from NeuralNetwork.weight import weights
             self.network = weights
 
 
@@ -70,8 +71,9 @@ class RegressionNeuralNetwork:
 
 
     def forward_propagate(self, inputs):
-        self.output = [inputs]
+        self.output = []
         for i in range(self.hiddenLayers + 1):
+            # print(self.network[i])
             inputs = [self.funlist[i](self._sumWeights(neuron, inputs)) for neuron in self.network[i]]
             self.output.append(inputs)
         return inputs
@@ -88,6 +90,7 @@ class RegressionNeuralNetwork:
         self._train_network(train, result, l_rate)
 
     def _train_network(self, train, result, l_rate):
+        train = [Board.convert(board) for board in train]
         self.error_delta = []
         for i in range(len(train)):
             output = self.predict(train[i])
@@ -96,23 +99,25 @@ class RegressionNeuralNetwork:
 
 
     def _backPropogate(self, expected, no_trained):
-        for i in range(self.hiddenLayers + 1, -1, -1):
+        for i in range(self.hiddenLayers, -1, -1):
             layer = self.network[i]
             errors = []
             if i == len(self.network) - 1:
                 for j in range(len(layer)):
-                    errors.append(expected[j] - self.output[i][j])
+                    errors.append(expected - self.output[i][j])
             else:
                 for j in range(len(layer)):
                     error = 0.0
                     for neuron in self.network[i + 1]:
-                        error += (neuron[j] * self.error_delta[self.hiddenLayers + 1 - i][j])
+                        for k in range(len(self.error_delta[self.hiddenLayers - (i + 1)])):
+                            error += (neuron[j] * self.error_delta[self.hiddenLayers - (i + 1)][k])
                     errors.append(error)
-            error = [errors[j] * self.dfunlist[i](self.output[i][j]) for j in range(len(layer))]
+
+            error = [errors[k] * self.dfunlist[i](self.output[i][k]) for k in range(len(layer))]
             if bool(no_trained):
-                self.error_delta.append(error)
-            else:
                 self._averageDelta(error, no_trained, i)
+            else:
+                self.error_delta.append(error)
 
 
     def _averageDelta(self, error, no_trained, i):
@@ -123,12 +128,13 @@ class RegressionNeuralNetwork:
 
     # Update network weights with error
     def _update_weights(self, inputs, l_rate):
-        for i in range(self.hiddenLayers + 2):
+        for i in range(self.hiddenLayers + 1):
             if i != 0:
-                inputs = self.output[i]
+                inputs = self.output[i][:-1]
             for neuron in self.network[i]:
                 for j in range(len(inputs)):
-                    neuron[j] += l_rate * self.error_delta[self.hiddenLayers + 1 - i][j] * inputs[j]
-                neuron[-1] += l_rate * self.error_delta[self.hiddenLayers + 1 - i][-1]
+                    for k in range(len(self.error_delta[self.hiddenLayers - (i + 1)])):
+                        neuron[j] += l_rate * self.error_delta[self.hiddenLayers - (i + 1)][k] * inputs[j]
+                neuron[-1] += l_rate * self.error_delta[self.hiddenLayers - (i + 1)][-1]
 
 

@@ -1,8 +1,8 @@
 import math
 import collections
 from Agents.Agent import Agent
-from ZobristHash import ZobristHash
 from Board import Board
+from ZobristHash import ZobristHash
 
 
 class MinMaxAgent(Agent):

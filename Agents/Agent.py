@@ -1,4 +1,5 @@
 import abc
+from Board import Board
 
 class Agent(abc.ABC):
 

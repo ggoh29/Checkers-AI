@@ -3,7 +3,7 @@ from Agents import MinMaxAgent
 
 class Board:
 
-    def __init__(self, player1, player2, test = False, board = None):
+    def __init__(self, player1, player2, max_length = 200, test = False, board = None):
         self.normal0 = [9, 7]
         self.normal1 = [-7, -9]
         self.queen = [9, -7, 7, -9]
@@ -22,11 +22,20 @@ class Board:
         self.player_dct = {0: player1,
                       1: player2}
         self.sequence = []
+        self.max_length = max_length
         # test and board are used for situational testing purposes
         if test:
             self.board = board
         else:
             self.board = [0, 5, 0, 5, 0, 5, 0, 5,
+                          5, 0, 5, 0, 5, 0, 5, 0,
+                          0, 5, 0, 5, 0, 5, 0, 5,
+                          1, 0, 1, 0, 1, 0, 1, 0,
+                          0, 1, 0, 1, 0, 1, 0, 1,
+                          3, 0, 3, 0, 3, 0, 3, 0,
+                          0, 3, 0, 3, 0, 3, 0, 3,
+                          3, 0, 3, 0, 3, 0, 3, 0]
+            self.copy = [0, 5, 0, 5, 0, 5, 0, 5,
                           5, 0, 5, 0, 5, 0, 5, 0,
                           0, 5, 0, 5, 0, 5, 0, 5,
                           1, 0, 1, 0, 1, 0, 1, 0,
@@ -57,24 +66,32 @@ class Board:
 
     def play(self):
         player = 0
-        self.sequence = [self.board]
-        moves = self.playermove_dct[player]()
-        if len(moves) == 0:
-            outcome = 1 - player
-            # 0, 1 into -1, 1. 1, 0 into 1, -1
-            print("Player {} has won the game!".format(outcome))
-            return player * -1 + outcome
-        if self.board.count(3) == 0 and self.board.count(5) == 0:
-            print("Tie!")
-            return 0
-        else:
-            move = self.player_dct[player].play(moves, self.board)
-            Board.play_move(self.board, move, player)
-            self.sequence.append(self.board)
-            player = 1 - player
-        # self.printboard()
-        # print("\n")
+        outcome = 0
+        self.sequence = [[i for i in self.board]]
+        for _ in range(self.max_length):
+            moves = self.playermove_dct[player]()
+            if len(moves) == 0:
+                outcome = 1 - player
+                # 0, 1 into -1, 1. 1, 0 into 1, -1
+                # print("Player {} has won the game!".format(outcome))
+                outcome = player * -1 + outcome
+                break
+            if self.board.count(3) == 0 and self.board.count(5) == 0:
+                # print("Tie!")
+                outcome = 0
+                break
+            else:
+                move = self.player_dct[player].play(moves, self.board)
+                Board.play_move(self.board, move, player)
+                self.sequence.append([i for i in self.board])
+                player = 1 - player
+            # print("\n")
+        self.board = [i for i in self.copy]
+        # print("Tie!")
+        return outcome
 
+    def getSequence(self):
+        return self.sequence
 
     @staticmethod
     def convert(board):
@@ -161,15 +178,4 @@ class Board:
                 board[i] |= 8
 
         return board
-
-
-
-if __name__ == "__main__":
-    train_size = 10000
-    # q = Qstates()
-    # a = RandomAgent.RandomAgent(0)
-    a = MinMaxAgent.MinMaxAgent(0, 7)
-    b = MinMaxAgent.MinMaxAgent(1, 7)
-    b = Board(a, b)
-    # q.save_to_file()
 
