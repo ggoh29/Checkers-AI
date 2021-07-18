@@ -1,5 +1,5 @@
 import math
-from random import random
+from random import uniform
 from Board import Board
 
 class RegressionNeuralNetwork:
@@ -14,8 +14,8 @@ class RegressionNeuralNetwork:
         self.weightsPath = weightsPath
         self.functionName = function
         self.maxScore = maxScore
-        functions = {'sigmoid': self._sigmoid, 'arctan' : self._tanh}
-        functionDerivatives = {'sigmoid' : self._sigmoidDerivative, 'arctan' : self._tanhDerivative}
+        functions = {'sigmoid': self._sigmoid, 'tanh' : self._tanh}
+        functionDerivatives = {'sigmoid' : self._sigmoidDerivative, 'tanh' : self._tanhDerivative}
         function = functions.get(self.functionName, self._error)
         derivativeFunction = functionDerivatives.get(self.functionName, self._error)
         self.funlist= [function] * hiddenLayers + [self._specialtanH]
@@ -24,7 +24,7 @@ class RegressionNeuralNetwork:
             self.createWeight()
             self.saveToFile()
         else:
-            from NeuralNetwork.weight import weights
+            from weight import weights
             self.network = weights
 
 
@@ -33,7 +33,7 @@ class RegressionNeuralNetwork:
         nodes = [self.inputSize] + self.hiddenNodes + [1]
         for i in range(len(nodes) - 1):
             inputs, outputs = nodes[i], nodes[i + 1]
-            weights = [[random() for _ in range(inputs + 1)] for _ in range(outputs)]
+            weights = [[uniform(-1, 1) for _ in range(inputs + 1)] for _ in range(outputs)]
             self.network.append(weights)
 
 
@@ -62,7 +62,7 @@ class RegressionNeuralNetwork:
 
     def saveToFile(self):
         f = open(self.weightsPath, 'w')
-        f.write(f'weights = {self.network}')
+        f.write(f'weights = [{self.network[0]}, \n {self.network[1]}, \n {self.network[2]}]')
         f.close()
 
 
@@ -73,7 +73,6 @@ class RegressionNeuralNetwork:
     def forward_propagate(self, inputs):
         self.output = []
         for i in range(self.hiddenLayers + 1):
-            # print(self.network[i])
             inputs = [self.funlist[i](self._sumWeights(neuron, inputs)) for neuron in self.network[i]]
             self.output.append(inputs)
         return inputs
@@ -94,11 +93,11 @@ class RegressionNeuralNetwork:
         self.error_delta = []
         for i in range(len(train)):
             output = self.predict(train[i])
-            self._backPropogate(result[i], i)
+            self._backPropogate(result[i])
             self._update_weights(train[i], l_rate)
 
 
-    def _backPropogate(self, expected, no_trained):
+    def _backPropogate(self, expected):
         for i in range(self.hiddenLayers, -1, -1):
             layer = self.network[i]
             errors = []
@@ -113,17 +112,14 @@ class RegressionNeuralNetwork:
                             error += (neuron[j] * self.error_delta[self.hiddenLayers - (i + 1)][k])
                     errors.append(error)
 
-            error = [errors[k] * self.dfunlist[i](self.output[i][k]) for k in range(len(layer))]
-            if bool(no_trained):
-                self._averageDelta(error, no_trained, i)
-            else:
-                self.error_delta.append(error)
+            error = [errors[k] * self.dfunlist[self.hiddenLayers - i](self.output[i][k]) for k in range(len(layer))]
+            self.error_delta.append(error)
 
 
-    def _averageDelta(self, error, no_trained, i):
-        row = self.error_delta[self.hiddenLayers - i]
-        for i in range(len(row)):
-            row[i] = row[i] + (error[i] - row[i])/(no_trained + 1)
+    # def _averageDelta(self, error, no_trained, i):
+    #     row = self.error_delta[self.hiddenLayers - i]
+    #     for i in range(len(row)):
+    #         row[i] = row[i] + (error[i] - row[i])/(no_trained + 1)
 
 
     # Update network weights with error
@@ -136,5 +132,3 @@ class RegressionNeuralNetwork:
                     for k in range(len(self.error_delta[self.hiddenLayers - (i + 1)])):
                         neuron[j] += l_rate * self.error_delta[self.hiddenLayers - (i + 1)][k] * inputs[j]
                 neuron[-1] += l_rate * self.error_delta[self.hiddenLayers - (i + 1)][-1]
-
-

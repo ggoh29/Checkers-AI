@@ -1,7 +1,7 @@
 import math
 import collections
 from Agents.Agent import Agent
-from Board import Board
+# from Board import Board
 from ZobristHash import ZobristHash
 
 
