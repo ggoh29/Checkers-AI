@@ -27,37 +27,36 @@ class Board:
         if test:
             self.board = board
         else:
-            self.board = [0, 5, 0, 5, 0, 5, 0, 5,
-                          5, 0, 5, 0, 5, 0, 5, 0,
-                          0, 5, 0, 5, 0, 5, 0, 5,
+            self.board = [0, -1, 0, -1, 0, -1, 0, -1,
+                          -1, 0, -1, 0, -1, 0, -1, 0,
+                          0, -1, 0, -1, 0, -1, 0, -1,
+                          0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0,
                           1, 0, 1, 0, 1, 0, 1, 0,
                           0, 1, 0, 1, 0, 1, 0, 1,
-                          3, 0, 3, 0, 3, 0, 3, 0,
-                          0, 3, 0, 3, 0, 3, 0, 3,
-                          3, 0, 3, 0, 3, 0, 3, 0]
-            self.copy = [0, 5, 0, 5, 0, 5, 0, 5,
-                          5, 0, 5, 0, 5, 0, 5, 0,
-                          0, 5, 0, 5, 0, 5, 0, 5,
+                          1, 0, 1, 0, 1, 0, 1, 0]
+            self.copy = [0, -1, 0, -1, 0, -1, 0, -1,
+                          -1, 0, -1, 0, -1, 0, -1, 0,
+                          0, -1, 0, -1, 0, -1, 0, -1,
+                          0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0,
                           1, 0, 1, 0, 1, 0, 1, 0,
                           0, 1, 0, 1, 0, 1, 0, 1,
-                          3, 0, 3, 0, 3, 0, 3, 0,
-                          0, 3, 0, 3, 0, 3, 0, 3,
-                          3, 0, 3, 0, 3, 0, 3, 0]
+                          1, 0, 1, 0, 1, 0, 1, 0]
 
 
     def player0_normalMove(self):
-        return Board.get_valid_moves(self.board, self.valid_pos, self.normal0, 5, False, False)
+        return Board.get_valid_moves(self.board, self.valid_pos, self.normal0, -1, False, False)
 
     def player1_normalMove(self):
-        return Board.get_valid_moves(self.board, self.valid_pos, self.normal1, 3, False, False)
+        return Board.get_valid_moves(self.board, self.valid_pos, self.normal1, 1, False, False)
 
     def printboard(self):
-        swaps = {5 : 'x',
-                 3 : 'o',
-                 13: 'X',
-                 11: '0',
-                 0 : ' ',
-                 1 : ' ' }
+        swaps = {-1 : 'x',
+                 1 : 'o',
+                 -2: 'X',
+                 2: '0',
+                 0 : ' ' }
         thing = [i for i in range(0,65,8)]
         for j in range(8):
             start, end = thing[j], thing[j+1]
@@ -76,7 +75,7 @@ class Board:
                 # print("Player {} has won the game!".format(outcome))
                 outcome = player * -1 + outcome
                 break
-            if self.board.count(3) == 0 and self.board.count(5) == 0:
+            if self.board.count(1) == 0 and self.board.count(-1) == 0:
                 # print("Tie!")
                 outcome = 0
                 break
@@ -85,8 +84,7 @@ class Board:
                 Board.play_move(self.board, move, player)
                 self.sequence.append([i for i in self.board])
                 player = 1 - player
-            # print("\n")
-        self.board = [i for i in self.copy]
+        self.board = self.copy[:]
         # print("Tie!")
         return outcome
 
@@ -117,14 +115,14 @@ class Board:
                         j = i + move
                     else:
                         continue
-                    if board[j] == 1 and not capbool:
+                    if board[j] == 0 and not capbool:
                         move1 = coords[:]
                         move1.append(j)
                         moves.append(move1)
-                    if board[j] & 7 == (player_num & 7) ^ 6:
+                    if board[j] * player_num < 0:
                         if j % 8 == 0 or j % 8 == 7 or not -1 < j + move < 64:
                             continue
-                        if board[j + move] == 1:
+                        if board[j + move] == 0:
                             if j + move in coords:
                                 continue
 
@@ -136,7 +134,7 @@ class Board:
                             move2.append(j + move)
                             moves.append(move2)
 
-            elif board[i] == player_num|8 and len(steps) == 2:
+            elif board[i] * player_num == 2 and len(steps) == 2:
                 queens.append([i])
 
         if len(capture) != 0:
@@ -146,7 +144,6 @@ class Board:
         if len(queens) != 0:
             queen_moves = Board.get_valid_moves(board, queens, [9, -7, 7, -9], player_num, True, False)
             moves.extend(queen_moves)
-
         return moves
 
     @staticmethod
@@ -156,26 +153,26 @@ class Board:
         if abs(piece_i - final_pos) < 10:
             # single move
             board[final_pos] = board[piece_i]
-            board[piece_i] = 1
+            board[piece_i] = 0
         elif len(move) == 2:
             # single move capture
             board[final_pos] = board[piece_i]
-            board[piece_i] = 1
-            board[(piece_i + final_pos)//2] = 1
+            board[piece_i] = 0
+            board[(piece_i + final_pos)//2] = 0
         else:
             # multiple captures
             board[final_pos] = board[piece_i]
-            board[piece_i] = 1
+            board[piece_i] = 0
             for i in range(len(move)-1):
                 start, end = move[i], move[i+1]
-                board[(start + end)//2] = 1
+                board[(start + end)//2] = 0
 
         lastrow = {1 : [1, 3, 5, 7], 0 : [56, 58, 60, 62]}
-        true_player = {0 : 5, 1 : 3}
+        true_player = {0 : -1, 1 : 1}
 
         for i in lastrow[player]:
             if board[i] == true_player[player]:
-                board[i] |= 8
+                board[i] *= 2
 
         return board
 

@@ -42,9 +42,8 @@ class RLAgent(Agent):
 
 
     def update_outcome(self, final_sequence, result):
-        if self.istrain:
-            self.games_played = (1 + self.games_played) % self.size
-            self.Qstates.update_NN(final_sequence, result)
+        self.games_played = (1 + self.games_played) % self.size
+        self.Qstates.update_NN(final_sequence, result)
 
     def save_to_file(self):
         self.RNN.saveToFile()

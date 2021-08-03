@@ -1,7 +1,7 @@
 import math
 import collections
 from Agents.Agent import Agent
-# from Board import Board
+from Board import Board
 from ZobristHash import ZobristHash
 
 
@@ -29,10 +29,10 @@ class MinMaxAgent(Agent):
 
         if player_no:
             steps = [-7, -9]
-            player_num = 3
+            player_num = 1
         else:
             steps = [9, 7]
-            player_num = 5
+            player_num = -1
 
         moves = Board.get_valid_moves(board, self.squares, steps, player_num, False, False)[::-1]
 
@@ -88,9 +88,9 @@ class MinMaxAgent(Agent):
 
     def _heuristicFunction(self, board: list) -> int:
         counter = collections.Counter(board)
-        if 5 not in counter and 13 not in counter:
-            return 160
-        elif 3 not in counter and 11 not in counter:
-            return - 160
+        if -1 not in counter and -2 not in counter:
+            return 72
+        elif 1 not in counter and 2 not in counter:
+            return -72
 
-        return counter.get(3, 0) + 3 * counter.get(11, 0) - counter.get(5, 0) - 3 * counter.get(13, 0)
+        return sum(board)

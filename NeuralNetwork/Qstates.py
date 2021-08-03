@@ -19,7 +19,7 @@ class Qstates:
 
     def update_NN(self, sequence, result):
         # 1 for win, 0 for tie
-        result_dct = {1 : 100, 0 : 0, -1 : -100}
+        result_dct = {1 : 1, 0 : 0, -1 : -1}
 
         result = [result_dct[result]]
 
@@ -32,7 +32,7 @@ class Qstates:
 
     def choose_optimal_move(self, moves : list, board : list, player_no) -> list:
         func = {1 : max, 0 : min}
-        boards = [Board.convert(Board.play_move([i for i in board], move, player_no)) for move in moves]
+        boards = [Board.convert(Board.play_move(board[:], move, player_no)) for move in moves]
         scores = [self.RNN.predict(board) for board in boards]
         index = scores.index(func[player_no](scores))
         return moves[index]
@@ -48,15 +48,13 @@ class Qstates:
 
         if player_no:
             steps = [-7, -9]
-            player_num = 3
+            player_num = 1
         else:
             steps = [9, 7]
-            player_num = 5
+            player_num = -1
         moves = Board.get_valid_moves(board, self.valid_pos, steps, player_num, False, False)
         boards = [Board.convert(Board.play_move(board, move, player_no)) for move in moves]
-        # print(boards)
         scores = [self.RNN.predict(board) for board in boards]
-        # print(scores)
 
         return self.discountRate * side_dct[player_no](scores)
 

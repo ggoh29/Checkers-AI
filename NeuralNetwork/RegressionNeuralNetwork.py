@@ -4,7 +4,7 @@ from Board import Board
 
 class RegressionNeuralNetwork:
 
-    def __init__(self, hiddenLayers : int, hiddenNodes : list, inputSize : int, maxScore = 100,
+    def __init__(self, hiddenLayers : int, hiddenNodes : list, inputSize : int, maxScore = 1,
                  init = True, function = 'sigmoid', weightsPath = 'weight.py'):
         if len(hiddenNodes) != hiddenLayers:
             Exception("size of hiddenNodes must be the same as hiddenLayers")
@@ -18,8 +18,8 @@ class RegressionNeuralNetwork:
         functionDerivatives = {'sigmoid' : self._sigmoidDerivative, 'tanh' : self._tanhDerivative}
         function = functions.get(self.functionName, self._error)
         derivativeFunction = functionDerivatives.get(self.functionName, self._error)
-        self.funlist= [function] * hiddenLayers + [self._specialtanH]
-        self.dfunlist = [self._stanhDerivative] + [derivativeFunction] * hiddenLayers
+        self.funlist= [function] * hiddenLayers + [self._tanh]
+        self.dfunlist = [self._tanhDerivative] + [derivativeFunction] * hiddenLayers
         if init:
             self.createWeight()
             self.saveToFile()
@@ -50,10 +50,10 @@ class RegressionNeuralNetwork:
         return 1 - (math.tanh(input))**2
 
     def _specialtanH(self, input):
-        return self.maxScore * math.tanh(input)
+        return self.maxScore * math.tanh(input/10)
 
     def _stanhDerivative(self, input):
-        return self.maxScore * (1 - (math.tanh(input))**2)
+        return self.maxScore * (1 - (math.tanh(input/10))**2)
 
 
     def _error(self, input):
