@@ -84,6 +84,8 @@ class Board:
                 Board.play_move(self.board, move, player)
                 self.sequence.append([i for i in self.board])
                 player = 1 - player
+        self.printboard()
+        print("\n")
         self.board = self.copy[:]
         # print("Tie!")
         return outcome
