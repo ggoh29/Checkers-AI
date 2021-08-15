@@ -68,6 +68,8 @@ class Board:
         outcome = 0
         self.sequence = [[i for i in self.board]]
         for _ in range(self.max_length):
+            self.printboard()
+            print("\n")
             moves = self.playermove_dct[player]()
             if len(moves) == 0:
                 outcome = 1 - player
@@ -152,7 +154,7 @@ class Board:
     def play_move(board, move, player):
         piece_i = move[0]
         final_pos = move[-1]
-        if abs(piece_i - final_pos) < 10:
+        if len(move) == 2 and abs(piece_i - final_pos) < 10:
             # single move
             board[final_pos] = board[piece_i]
             board[piece_i] = 0
