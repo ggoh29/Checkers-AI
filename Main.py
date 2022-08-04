@@ -1,30 +1,35 @@
-from Agents import MinMaxAgent, RLAgent, RandomAgent, HumanAgent, MiniMaxRLAgent
+from Agents import MinMaxAgent, RLAgent, RandomAgent, HumanAgent, MiniMaxRLAgent, TorchRLAgent, TorchMinMaxRLAgent
 from NeuralNetwork import Qstates, RegressionNeuralNetwork
+from TorchNeuralNetwork import TorchQstates, TorchRegressionNeuralNetwork
 from Board import Board
-
+from tqdm import tqdm
 
 
 def main():
-    train_size = 3
-    RNN = RegressionNeuralNetwork.RegressionNeuralNetwork(2, [20,20], 32, init = False, function = 'tanh')
+    train_size = 10
+    # RNN = RegressionNeuralNetwork.RegressionNeuralNetwork(2, [20,20], 32, init = False, function = 'tanh')
+    TRNN = TorchRegressionNeuralNetwork.TorchRegressionNeuralNetwork(2, [128, 128], 32, init = False, function = 'tanh')
     # a = MiniMaxRLAgent.MinMaxRLAgent(0, 5, RNN)
     # a = RLAgent.RLAgent(0, RNN, train_size, istrain=False)
     # a = MinMaxAgent.MinMaxAgent(0, 6)
     # a = RandomAgent.RandomAgent(0)
-    a = HumanAgent.HumanAgent(0)
+    # a = TorchRLAgent.TorchRLAgent(0, TRNN, istrain= False)
+    a = TorchMinMaxRLAgent.TorchMinMaxRLAgent(0, 9, TRNN)
+    # b = HumanAgent.HumanAgent(0)
     # b = RLAgent.RLAgent(1, RNN, train_size, istrain=False)
-    # b = MinMaxAgent.MinMaxAgent(1, 6)
+    # b = MinMaxAgent.MinMaxAgent(1, 11)
     # b = RandomAgent.RandomAgent(1)
-    b = MiniMaxRLAgent.MinMaxRLAgent(1, 8, RNN)
+    # b = MiniMaxRLAgent.MinMaxRLAgent(1, 8, RNN)
+    # b = TorchRLAgent.TorchRLAgent(1, TRNN, istrain= False)
+    b = TorchMinMaxRLAgent.TorchMinMaxRLAgent(1, 9, TRNN)
     board = Board(a, b)
     acc = 0
-    for i in range(train_size):
+    for _ in range(train_size):
         # 1 means b wins, -1 means a wins
         result = board.play()
         sequence = board.getSequence()
-        # a.update_outcome(sequence, result)
-    print(acc)
-    # a.save_to_file()
+        a.update_outcome(sequence, result)
+    a.save_to_file()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import math
 from random import uniform
 from Board import Board
+from weight import weight
 
 class RegressionNeuralNetwork:
 
